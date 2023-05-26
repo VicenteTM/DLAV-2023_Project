@@ -3,7 +3,17 @@ import torch
 from torch import nn
 import math
 torch.autograd.set_detect_anomaly(True)  # Enable anomaly detection
+import numpy as np
+#from torch_sparse import coalesce
 
+segmts = [  (0,1), (0,2), (1,2), (0,3), (1,4), (3,4),
+            (5,9), (6,10), (7,11), (8,12),
+            (9,13), (10,14), (11,15), (12,16)]
+edge_index = []
+for segm in segmts:
+    edge_index.append([segm[0], segm[1]])
+    edge_index.append([segm[1], segm[0]])
+edge_index = torch.tensor(edge_index, dtype=torch.long).t().contiguous()
 
 class MonolocoModel(nn.Module):
     """
@@ -78,6 +88,48 @@ class MyLinear(nn.Module):
 
         return out
 
+from torch_geometric.nn import GCNConv
+
+class KeypointGNN(nn.Module):
+    def __init__(self, num_keypoints, num_features, hidden_size=34, num_classes=2,device='cuda'):
+        super(KeypointGNN, self).__init__()
+
+        self.num_keypoints = num_keypoints
+        self.num_features = num_features
+        self.hidden_size = hidden_size
+        self.num_classes = num_classes
+        self.device = device
+
+        # Graph convolution layers
+        self.conv1 = GCNConv(self.num_features, self.hidden_size)
+        self.conv2 = GCNConv(self.hidden_size, self.hidden_size)
+        self.conv3 = GCNConv(self.hidden_size, self.hidden_size)
+
+        # Output layer
+        self.fc = nn.Linear(self.hidden_size, self.num_classes)
+
+    def forward(self, x, edge_index):
+        # x: input keypoints [num_keypoints, num_features]
+        # edge_index: graph connectivity [2, num_edges]
+
+        # Graph convolution layers
+        x = self.conv1(x, edge_index)
+        x = torch.relu(x)
+        x = self.conv2(x, edge_index)
+        x = torch.relu(x)
+        x = self.conv3(x, edge_index)
+        x = torch.relu(x)
+
+        # Global pooling (e.g., mean pooling) to aggregate node features into a graph-level feature vector in 2D
+        #x = torch.mean(x, dim=0)
+
+        # Output layer
+        x = self.fc(x)
+
+        return x
+
+
+
 class LocoModel(nn.Module):
     def __init__(self, input_size, output_size=2, linear_size=512, p_dropout=0.2, num_stage=3,device='cuda'):
         super().__init__()
@@ -92,6 +144,10 @@ class LocoModel(nn.Module):
         self.linear_stages = []
         self.device = device
 
+
+        #graph convolution layers
+        self.gc1 = KeypointGNN(self.stereo_size, self.stereo_size, self.linear_size, self.linear_size)
+
         # Preprocessing
         self.w1 = nn.Linear(self.stereo_size, self.linear_size)
         self.batch_norm1 = nn.BatchNorm1d(self.linear_size)
@@ -99,7 +155,9 @@ class LocoModel(nn.Module):
         self.dropout = nn.Dropout(self.p_dropout)
 
         # Transformer layer
-        self.transformer = TransformerModel(self.stereo_size, self.linear_size, num_layers=5, num_heads=34, dropout=self.p_dropout)
+        self.transformer = TransformerModel(self.stereo_size, self.linear_size, num_layers=4, num_heads=34, dropout=self.p_dropout)
+        self.batch_norm2 = nn.BatchNorm1d(self.stereo_size)
+        self.transformer2 = TransformerModel(self.linear_size, self.linear_size, num_layers=2, num_heads=2, dropout=self.p_dropout)
 
         # Internal loop
         for _ in range(num_stage):
@@ -118,14 +176,16 @@ class LocoModel(nn.Module):
         self.w_fin = nn.Linear(self.linear_size, self.output_size)
 
     def forward(self, x):
-        y = self.transformer(x)  # Pass y as both source and target
-        y = self.w1(y)
+        print("x",x)
+        self.connectivity_graph = generate_connectivity_graph(x.size(0))
+        y = self.transformer(x)  # Pass y as both source and target\
+        y = y.float()
+        y = self.gc1(y.to(self.device), edge_index)
+        #y = self.w1(x)
+        #y = self.batch_norm1(y)
         y = self.batch_norm1(y)
         y = self.relu(y)
         y = self.dropout(y)
-
-        # Transformer layer
-
         for i in range(self.num_stage):
             y = self.linear_stages[i](y)
 
