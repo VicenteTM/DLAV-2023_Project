@@ -101,7 +101,7 @@ class LocoModel(nn.Module):
         # Transformer layer
         self.transformer = TransformerModel(self.stereo_size, self.linear_size, num_layers=4, num_heads=34, dropout=self.p_dropout)
         self.batch_norm2 = nn.BatchNorm1d(self.linear_size)
-        self.transformer2 = TransformerModel(self.linear_size, self.linear_size, num_layers=2, num_heads=16, dropout=self.p_dropout)
+        self.transformer2 = TransformerModel(self.linear_size, self.linear_size, num_layers=1, num_heads=1, dropout=self.p_dropout)
 
         # Internal loop
         for _ in range(num_stage):
@@ -123,14 +123,12 @@ class LocoModel(nn.Module):
         #self.connectivity_graph = generate_connectivity_graph(x.size(0))
         #y = self.transformer(x)  # Pass y as both source and target\
         y = self.w1(x)
-        #y = self.batch_norm1(y)
         y = self.batch_norm1(y)
         y = self.relu(y)
         y = self.dropout(y)
         y = self.transformer2(y)  # Pass y as both source and target\
         y = self.batch_norm2(y)
         y = self.relu(y)
-        y = self.dropout(y)
         
         for i in range(self.num_stage):
             y = self.linear_stages[i](y)
