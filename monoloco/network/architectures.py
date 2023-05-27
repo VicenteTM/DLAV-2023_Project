@@ -154,9 +154,6 @@ class LocoModel(nn.Module):
         return y
 
 
-        return y
-
-
 class MyLinearSimple(nn.Module):
     def __init__(self, linear_size, p_dropout=0.5):
         super().__init__()
@@ -176,7 +173,7 @@ class MyLinearSimple(nn.Module):
         y = self.relu(y)
         y = self.dropout(y)
 
-        y = self.w2(y)
+        y = self.w2(x,y)
         y = self.batch_norm2(y)
         y = self.relu(y)
         y = self.dropout(y)
@@ -198,10 +195,12 @@ class TransformerModel(nn.Module):
             num_decoder_layers=num_layers, dim_feedforward=hidden_size, dropout=dropout
         )
 
-    def forward(self, x):
+    def forward(self, x,prev):
         x = self.positional_encoding(x)
+        prev = self.positional_encoding(prev)
         x = x.permute(1, 0, 2)
-        output = self.transformer(x, x)
+        prev = prev.permute(1, 0, 2)
+        output = self.transformer(x, prev)
         output = output.permute(1, 0, 2)
         output = output.squeeze()
         return output
