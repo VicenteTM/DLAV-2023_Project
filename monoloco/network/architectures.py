@@ -98,11 +98,6 @@ class LocoModel(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.dropout = nn.Dropout(self.p_dropout)
 
-        # Transformer layer
-        self.transformer = TransformerModel(self.stereo_size, self.linear_size, num_layers=4, num_heads=34, dropout=self.p_dropout)
-        self.batch_norm2 = nn.BatchNorm1d(self.linear_size)
-        self.transformer2 = TransformerModel(self.linear_size, self.linear_size, num_layers=1, num_heads=1, dropout=self.p_dropout)
-
         # Internal loop
         for _ in range(num_stage):
             self.linear_stages.append(MyLinearSimple(self.linear_size, self.p_dropout))
@@ -120,18 +115,11 @@ class LocoModel(nn.Module):
         self.w_fin = nn.Linear(self.linear_size, self.output_size)
 
     def forward(self, x):
-        #self.connectivity_graph = generate_connectivity_graph(x.size(0))
-        #y = self.transformer(x)  # Pass y as both source and target\
         #Preprocessing
         y = self.w1(x)
         y = self.batch_norm1(y)
         y = self.relu(y)
         y = self.dropout(y)
-
-        # Transformer layer
-        #y = self.transformer2(y)  # Pass y as both source and target\
-        #y = self.batch_norm2(y)
-        #y = self.relu(y)
 
         # Internal loop
         for i in range(self.num_stage):
