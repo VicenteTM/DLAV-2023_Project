@@ -20,7 +20,7 @@ We modified the architecture in various ways, and the architecture presented bel
     </figure>
 </div>
 
-The improved model used to compute the weights that can be found in the `weights` folder.
+The improved model used to compute the weights that can be found the [weights](https://drive.google.com/drive/folders/1BzW9tj1EgbQC7-Fop8gODIejZzN9YRpg?usp=drive_link) folder.
 
 Below are the results of our experiments with different transformer placements:
 
@@ -107,9 +107,9 @@ pip3 install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio --index-ur
 
 
 ### Running the Code
-
+Before running the code, make sure you have downloaded the [weights](https://drive.google.com/drive/folders/1BzW9tj1EgbQC7-Fop8gODIejZzN9YRpg?usp=drive_link).
 ``` bash
-python3 -m monoloco.run predict <desired_image_path> --model final_weights.pkl
+python3 -m monoloco.run predict <desired_image_path> --model <directory_of_your_weights>/final_weights.pkl
 ```
 
 
