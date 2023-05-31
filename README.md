@@ -2,9 +2,9 @@
 
 This project is a fork of the original repository [vita-epfl/monoloco](https://github.com/vita-epfl/monoloco). It builds upon the existing work to enhance the accuracy and computational efficiency of the MonoLoco model by incorporating transformer networks.
 
-For detailed information about the original project and its functionalities, please refer to the [vita-epfl/monoloco](https://github.com/vita-epfl/monoloco) repository or the `monolocoREADME.md` file.
+For detailed information about the original project and its functionalities, please refer to the [vita-epfl/monoloco](https://github.com/vita-epfl/monoloco) repository or the `monoloco_README.md` file.
 
-If you have any additional questions or require further information, please consult the aforementioned repository or the `monolocoREADME.md` file for detailed instructions and explanations.
+If you have any additional questions or require further information, please consult the aforementioned repository or the `monoloco_README.md` file for detailed instructions and explanations.
 
 ## Our contribution
 
