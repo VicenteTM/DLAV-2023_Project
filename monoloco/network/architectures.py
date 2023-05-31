@@ -151,7 +151,7 @@ class MyLinearSimple(nn.Module):
 
         self.w1 = nn.Linear(self.l_size, self.l_size)
         self.batch_norm1 = nn.BatchNorm1d(self.l_size)
-
+        ###Contribution : changed w2 from nn.Linear to TransformerModel
         self.w2 = TransformerModel(self.l_size, self.l_size, num_layers=1, num_heads=1, dropout=p_dropout)
         self.batch_norm2 = nn.BatchNorm1d(self.l_size)
 
@@ -169,7 +169,7 @@ class MyLinearSimple(nn.Module):
         out = x + y
         return out
 
-
+###Contribution : Added TransformerModel class and PositionalEncoding class
 class TransformerModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_heads, dropout):
         super(TransformerModel, self).__init__()
