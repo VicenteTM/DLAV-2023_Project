@@ -30,6 +30,7 @@ Below are the results of our experiments with different transformer placements:
 4. *Replacing FC Layers with Transformer Layers:* Our best implementation involved replacing the FC layers in the linear stages with transformer layers. This modification allowed us to leverage self-attention, the critical aspect of the architecture. With this approach, we achieved an accuracy of 83.7%.
 
 Throughout our experimentation, we explored a total of 96 different architectures, fine-tuning each one to achieve the best possible accuracy.
+For more detailed information on our contribution, please refer to our complementary [video presentation](https://www.youtube.com/watch?v=vfgRrd5vzxk).
 
 ## Experimental Setup and Evaluation Metrics
 
